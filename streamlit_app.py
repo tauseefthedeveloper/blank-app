@@ -1,27 +1,23 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import os
 
 st.title("Hostel Food Management System")
 
-# ---------- Initialize DataFrames ----------
-if 'members' not in st.session_state:
-    st.session_state.members = pd.DataFrame(columns=['Name', 'Email', 'Room No'])
+# ---------- Load CSV files or initialize DataFrames ----------
+def load_or_init(file_name, columns):
+    if os.path.exists(file_name):
+        return pd.read_csv(file_name)
+    else:
+        return pd.DataFrame(columns=columns)
 
-if 'rent' not in st.session_state:
-    st.session_state.rent = pd.DataFrame(columns=['Month', 'Member', 'Rent Paid'])
-
-if 'electricity' not in st.session_state:
-    st.session_state.electricity = pd.DataFrame(columns=['Month', 'Total Bill', 'Members'])
-
-if 'ration' not in st.session_state:
-    st.session_state.ration = pd.DataFrame(columns=['Month', 'Item', 'Quantity', 'Cost', 'Bought By'])
-
-if 'meals' not in st.session_state:
-    st.session_state.meals = pd.DataFrame(columns=['Date', 'Member', 'Meals Taken'])
-
-if 'cooking' not in st.session_state:
-    st.session_state.cooking = pd.DataFrame(columns=['Date', 'Member', 'Shift'])
+st.session_state.members = load_or_init("members.csv", ['Name', 'Email', 'Room No'])
+st.session_state.rent = load_or_init("rent.csv", ['Month', 'Member', 'Rent Paid'])
+st.session_state.electricity = load_or_init("electricity.csv", ['Month', 'Total Bill', 'Members'])
+st.session_state.ration = load_or_init("ration.csv", ['Month', 'Item', 'Quantity', 'Cost', 'Bought By'])
+st.session_state.meals = load_or_init("meals.csv", ['Date', 'Member', 'Meals Taken'])
+st.session_state.cooking = load_or_init("cooking.csv", ['Date', 'Member', 'Shift'])
 
 # ---------- Member Management ----------
 st.header("Member Details")
@@ -35,6 +31,7 @@ with st.expander("Add Member"):
                 [st.session_state.members, pd.DataFrame([[name_member, email_member, room_member]], columns=['Name','Email','Room No'])],
                 ignore_index=True
             )
+            st.session_state.members.to_csv("members.csv", index=False)  # Save permanently
             st.success(f"Member {name_member} added!")
         else:
             st.warning("Please enter a member name.")
@@ -55,6 +52,7 @@ with st.expander("Add Rent"):
                 [st.session_state.rent, pd.DataFrame([[month_rent, member_rent, rent_paid]], columns=['Month','Member','Rent Paid'])],
                 ignore_index=True
             )
+            st.session_state.rent.to_csv("rent.csv", index=False)
             st.success(f"Rent for {member_rent} added!")
 
 with st.expander("Add Electricity Bill"):
@@ -67,6 +65,7 @@ with st.expander("Add Electricity Bill"):
                 [st.session_state.electricity, pd.DataFrame([[month_elec, total_bill, members_elec]], columns=['Month','Total Bill','Members'])],
                 ignore_index=True
             )
+            st.session_state.electricity.to_csv("electricity.csv", index=False)
             st.success(f"Electricity bill for {month_elec} added!")
 
 # ---------- Ration ----------
@@ -83,6 +82,7 @@ with st.expander("Add Ration Item"):
                 [st.session_state.ration, pd.DataFrame([[month_ration, item_name, qty_item, cost_item, bought_by_member]], columns=['Month','Item','Quantity','Cost','Bought By'])],
                 ignore_index=True
             )
+            st.session_state.ration.to_csv("ration.csv", index=False)
             st.success(f"Ration item {item_name} added!")
 
 # ---------- Meal Tracking ----------
@@ -96,6 +96,7 @@ with st.expander("Add Meal Data"):
             [st.session_state.meals, pd.DataFrame([[date_meal, member_meal, meals_taken]], columns=['Date','Member','Meals Taken'])],
             ignore_index=True
         )
+        st.session_state.meals.to_csv("meals.csv", index=False)
         st.success(f"Meal data added for {member_meal} on {date_meal}")
 
 # ---------- Cooking Duty ----------
@@ -109,6 +110,7 @@ with st.expander("Assign Cooking Duty"):
             [st.session_state.cooking, pd.DataFrame([[today_date, member_cook, shift_cook]], columns=['Date','Member','Shift'])],
             ignore_index=True
         )
+        st.session_state.cooking.to_csv("cooking.csv", index=False)
         st.success(f"{member_cook} assigned for {shift_cook} shift today!")
 
 # ---------- Display Tables ----------
